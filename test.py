@@ -48,16 +48,17 @@ def vis_parsing_maps(im, parsing_anno, stride, save_im=False, save_path='vis_res
 
     # return vis_im
 
-def evaluate(respth='./res/test_res', dspth='./data', cp='model_final_diss.pth'):
+def evaluate(respth='./res/test_growing', dspth='./data', cp='model_final_diss.pth'):
 
     if not os.path.exists(respth):
         os.makedirs(respth)
 
     n_classes = 19
     net = BiSeNet(n_classes=n_classes)
-    net.cuda()
-    save_pth = osp.join('res/cp', cp)
-    net.load_state_dict(torch.load(save_pth))
+    # net.cuda()
+    net.cpu()
+    save_pth = osp.join('.', cp)
+    net.load_state_dict(torch.load(save_pth, map_location=torch.device('cpu')))
     net.eval()
 
     to_tensor = transforms.Compose([
@@ -65,12 +66,20 @@ def evaluate(respth='./res/test_res', dspth='./data', cp='model_final_diss.pth')
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
     with torch.no_grad():
-        for image_path in os.listdir(dspth):
-            img = Image.open(osp.join(dspth, image_path))
-            image = img.resize((512, 512), Image.BILINEAR)
-            img = to_tensor(image)
+        print("total len ", len(os.listdir(dspth)))
+        for id, image_path in enumerate(os.listdir(dspth)):
+            if image_path[-3:] not in ["jpg", "JPG" ,"png", "PNG"]:
+                continue
+            
+            try:
+                img = Image.open(osp.join(dspth, image_path)).convert('RGB')
+                image = img.resize((512, 512), Image.BILINEAR)
+                img = to_tensor(image)
+            except:
+                import pdb;pdb.set_trace()
             img = torch.unsqueeze(img, 0)
-            img = img.cuda()
+            # img = img.cuda()
+            img = img.cpu()
             out = net(img)[0]
             parsing = out.squeeze(0).cpu().numpy().argmax(0)
             # print(parsing)
@@ -78,6 +87,8 @@ def evaluate(respth='./res/test_res', dspth='./data', cp='model_final_diss.pth')
 
             vis_parsing_maps(image, parsing, stride=1, save_im=True, save_path=osp.join(respth, image_path))
 
+            if id % 100 == 0:
+                print("num; ", id)
 
 
 
@@ -85,6 +96,6 @@ def evaluate(respth='./res/test_res', dspth='./data', cp='model_final_diss.pth')
 
 
 if __name__ == "__main__":
-    evaluate(dspth='/home/zll/data/CelebAMask-HQ/test-img', cp='79999_iter.pth')
+    evaluate(respth='./res/test_growing', dspth='/Users/osamura/Downloads/growing_20180601/', cp='79999_iter.pth')
 
 

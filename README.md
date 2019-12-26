@@ -1,5 +1,9 @@
 # face-parsing.PyTorch
 
+## annotated images Flow
+ - change 'respth=, dspth=' in if __name__ of test.py
+ - run test.py
+
 <p align="center">
 	<a href="https://github.com/zllrunning/face-parsing.PyTorch">
     <img class="page-image" src="https://github.com/zllrunning/face-parsing.PyTorch/blob/master/6.jpg" >
