@@ -1,9 +1,24 @@
 # face-parsing.PyTorch
 
 ## annotated images Flow
+ - install pipenv
+ - download RetinaFace pretrained model  
+ Pretrained Model: RetinaFace-R50 ([baidu cloud](https://pan.baidu.com/s/1C6nKq122gJxRhb37vK0_LQ) or [dropbox](https://www.dropbox.com/s/53ftnlarhyrpkg2/retinaface-R50.zip?dl=0)) is a medium size model with ResNet50 backbone.  
+ It can output face bounding boxes and five facial landmarks in a single forward pass.  
+ WiderFace validation mAP: Easy 96.5, Medium 95.6, Hard 90.4.  
+ - unzip and set the RetinaFace pretrained model in `src/RetinaFace/model/`
  - change 'respth=, dspth=' in if __name__ of test.py
+ - setup
+ ```
+ pipenv install
+ pipenv shell
+ pip install mxnet==1.4.1, cython
+ sh setup.sh
+ ```
  - run test.py
 
+
+## example image
 <p align="center">
 	<a href="https://github.com/zllrunning/face-parsing.PyTorch">
     <img class="page-image" src="https://github.com/zllrunning/face-parsing.PyTorch/blob/master/6.jpg" >
