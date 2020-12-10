@@ -82,7 +82,9 @@ def evaluate(respth='./res/test_growing', dspth='./data', cp='model_final_diss.p
             if image_path[-3:] not in ["jpg", "JPG" ,"png", "PNG"]:
                 continue
 
-            img = cv2.imread(osp.join(dspth, image_path), cv2.IMREAD_COLOR)
+            # img = cv2.imread(osp.join(dspth, image_path), cv2.IMREAD_COLOR)
+            img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+            #import pdb; pdb.set_trace()
             if img is None:
                 print("img is None")
                 continue
@@ -111,20 +113,30 @@ def evaluate(respth='./res/test_growing', dspth='./data', cp='model_final_diss.p
                     # 顔枠の1.4倍でcropするための拡大幅
                     scaled_w = int(0.2 * bb_w)
                     scaled_h = int(0.2 * bb_h)
-                    new_bb_x1 = int(bb_x - (scaled_w / 2))
-                    new_bb_x2 = int(new_bb_x1 + bb_w + scaled_w)
-                    new_bb_y1 = int(bb_y - (scaled_h / 2))
-                    new_bb_y2 = int(new_bb_y1 + bb_h + scaled_h)
+                    new_bb_x1 = max(0, int(bb_x - (scaled_w / 2)))
+                    new_bb_x2 = min(padded_img.shape[1], int(new_bb_x1 + bb_w + scaled_w))
+                    new_bb_y1 = max(0, int(bb_y - (scaled_h / 2)))
+                    new_bb_y2 = min(padded_img.shape[0], int(new_bb_y1 + bb_h + scaled_h))
                     croped_image = padded_img[new_bb_y1: new_bb_y2, new_bb_x1: new_bb_x2]
                     # croped_image = padded_img[int(bb_y): int(bb_y+bb_h), int(bb_x): int(bb_x+bb_w)]
-                    cv2.imwrite("croped_sample.jpg", croped_image)
+                    try:
+                        cv2.imwrite("croped_sample.jpg", croped_image)
+                    except:
+                        print(croped_image)
+                        import pdb; pdb.set_trace()
 
+                    # image = cv2.resize(croped_image, (512, 512), interpolation=cv2.INTER_LINEAR)
                     image = cv2.resize(croped_image, (512, 512), interpolation=cv2.INTER_LINEAR)
                     tensor_img = to_tensor(image)
                     tensor_img = torch.unsqueeze(tensor_img, 0)
                     # tensor_img = tensor_img.cuda()
                     tensor_img = tensor_img.cpu()
+                    import time
+                    start = time.time()
                     out = net(tensor_img)[0]
+                    elapsed_time = time.time() - start
+                    print("elapsed_time:{0}".format(elapsed_time) + "[sec]")
+
                     parsing = out.squeeze(0).cpu().numpy().argmax(0)
                     # print(parsing)
                     print(np.unique(parsing))
@@ -144,6 +156,6 @@ def evaluate(respth='./res/test_growing', dspth='./data', cp='model_final_diss.p
 
 
 if __name__ == "__main__":
-    evaluate(respth='./res/test_moru_dataset', dspth='/Users/osamura/Documents/jolijoli/face-parsing.PyTorch/data/moru_dataset', cp='79999_iter.pth')
+    evaluate(respth='./res/test_hair_seg_512', dspth='./data/200424_hair_seg', cp='79999_iter.pth')
 
 
